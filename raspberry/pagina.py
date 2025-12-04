@@ -80,7 +80,7 @@ if ssid == "":
     start_ap()
     start_web_server()
     
-led = Pin("LED", Pin.OUT)
+led = Pin(0, Pin.OUT)
 
 def broadcast_ip():
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -93,18 +93,22 @@ def broadcast_ip():
         udp.sendto(msg, ("255.255.255.255", 5005))
         time.sleep(0.2)
 
-_thread.start_new_thread(broadcast_ip, ())
+
 def connect():
+    Pin("LED", Pin.OUT).off()
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
+    time.sleep(1)
     wlan.connect(ssid, passwd)
     while not wlan.isconnected():
         print("Waiting for connection...")
         time.sleep(0.2)
-    print(wlan.ifconfig()) 
+    print(wlan.ifconfig())
+    Pin("LED", Pin.OUT).on()
 
 
 connect()
+_thread.start_new_thread(broadcast_ip, ())
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = ("0.0.0.0", 8080)
 sock.bind(server_address)
@@ -120,10 +124,10 @@ while True:
         if True:
             data = connection.recv(4)
             print(int(data))
-            if(int(data) == 1):
+            if(int(data) == 0):
                 led.on()
                 time.sleep(1)
-            elif(int(data) == 0):
+            elif(int(data) == 1):
                 led.off()
                 time.sleep(1)
         
